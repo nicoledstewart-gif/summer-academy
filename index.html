@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Summer Academy">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Summer Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF8F3;--surface:#fff;--surface2:#F4EFE6;
+  --border:rgba(0,0,0,0.09);--text:#1A1612;--muted:#7A6E63;--faint:#C0B9B0;
+  --math-bg:#E8F0FB;--math:#1A56C4;--math-dk:#0F3A8A;
+  --bio-bg:#E6F5EC;--bio:#1A8A47;--bio-dk:#0F5C2E;
+  --eng-bg:#F5EAF8;--eng:#8A1AB5;--eng-dk:#5C0F7A;
+  --phon-bg:#FDF3E3;--phon:#C47A1A;--phon-dk:#8A520F;
+  --fall-bg:#FDEAE8;--fall:#C42A1A;--fall-dk:#8A1A0F;
+  --pen-bg:#FDEAF4;--pen:#B51A6E;--pen-dk:#7A0F4A;
+  --r:16px;--rs:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;gap:8px}
+.logo{font-family:'DM Serif Display',serif;font-size:20px;letter-spacing:-.3px;white-space:nowrap}
+.logo span{color:var(--math)}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.date-badge{font-size:12px;color:var(--muted);background:var(--surface2);padding:5px 12px;border-radius:20px;font-weight:500;white-space:nowrap}
+.streak{font-size:12px;font-weight:600;color:#C47A1A;background:var(--phon-bg);padding:5px 12px;border-radius:20px;white-space:nowrap}
+/* CONTAINER */
+.wrap{max-width:980px;margin:0 auto;padding:18px 14px}
+.greeting{margin-bottom:16px}
+.greeting h1{font-family:'DM Serif Display',serif;font-size:26px;letter-spacing:-.5px;margin-bottom:3px}
+.greeting p{color:var(--muted);font-size:14px}
+/* DATE PICKER ROW */
+.date-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.date-row label{font-size:13px;font-weight:600;color:var(--muted)}
+.date-input{padding:7px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer}
+.date-input:focus{outline:none;border-color:var(--math)}
+.today-btn{padding:7px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;font-weight:500}
+.today-btn:hover{border-color:var(--faint);color:var(--text)}
+/* DAY TABS */
+.day-nav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.day-lbl{font-size:12px;color:var(--faint);font-weight:500;margin-right:2px}
+.day-btn{padding:9px 15px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s;min-height:40px}
+.day-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+/* PROGRESS */
+.prog-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.prog-lbl{font-size:13px;font-weight:600;color:var(--muted);min-width:90px}
+.prog-track{flex:1;height:8px;background:var(--surface2);border-radius:8px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--math),var(--eng));border-radius:8px;transition:width .5s ease;width:0%}
+.prog-pct{font-size:14px;font-weight:600;min-width:34px;text-align:right}
+/* SUBJECT TABS */
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.stab{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid transparent;background:var(--surface);color:var(--muted);transition:all .18s;min-height:40px}
+.stab.active{background:var(--cbg);color:var(--c);border-color:var(--c)}
+.stab.sdone{opacity:.55}
+.stab-dot{width:8px;height:8px;border-radius:50%;background:var(--c);flex-shrink:0}
+/* MAIN GRID */
+.grid{display:grid;grid-template-columns:1fr 290px;gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+/* LESSON CARD */
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.lc-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+.lc-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:3px 11px;border-radius:20px;background:var(--cbg);color:var(--c);margin-bottom:9px}
+.lc-title{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.25;letter-spacing:-.3px;margin-bottom:4px}
+.lc-meta{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lc-tag{background:var(--surface2);padding:2px 9px;border-radius:8px;font-size:11px}
+.lc-body{padding:16px 20px}
+.obj-box{background:var(--surface2);border-radius:var(--rs);padding:11px 14px;margin-bottom:16px;font-size:14px;color:var(--muted);line-height:1.6}
+.obj-box strong{color:var(--text)}
+/* TASKS */
+.task-list{list-style:none;margin-bottom:14px}
+.task-item{padding:11px 0;border-bottom:1px solid var(--border)}
+.task-item:last-child{border-bottom:none}
+.task-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.task-item.done .task-text{text-decoration:line-through;opacity:.45}
+.tcb{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--faint);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent;background:transparent;transition:all .15s}
+.task-item.done .tcb{background:var(--c);border-color:var(--c);color:#fff}
+.task-text{font-size:14px;line-height:1.6;flex:1}
+.task-time{font-size:12px;color:var(--faint);margin-top:2px}
+/* RESOURCE LINKS */
+.task-links{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-left:34px}
+.rlink{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:5px 11px;border-radius:8px;text-decoration:none;font-weight:500;border:1px solid transparent;transition:all .15s;line-height:1.3}
+.rlink.yt{background:#FEF0F0;color:#C42A1A;border-color:rgba(196,42,26,.15)}
+.rlink.site{background:#F0FAF4;color:#1A8A47;border-color:rgba(26,138,71,.15)}
+.rlink.print{background:#FDF3E3;color:#C47A1A;border-color:rgba(196,122,26,.15)}
+/* TIP */
+.tip-box{background:var(--cbg);border-radius:var(--rs);padding:11px 14px;font-size:13px;line-height:1.65;color:var(--cdk)}
+.tip-box em{font-style:normal;display:block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.6;margin-bottom:3px}
+.lc-ftr{padding:13px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.done-btn{background:var(--c);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s}
+.done-btn:disabled{filter:grayscale(1) opacity(.4);cursor:default}
+/* OFF DAY */
+.offday{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:40px 24px;text-align:center}
+.offday .big{font-size:44px;margin-bottom:12px}
+.offday h2{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px}
+.offday p{color:var(--muted);font-size:14px;line-height:1.6;max-width:300px;margin:0 auto}
+/* SIDEBAR */
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.scard h3{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+/* WEEK MINI */
+.week-mini{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.wm{text-align:center;padding:7px 3px;border-radius:8px;cursor:pointer;transition:background .15s}
+.wm:hover{background:var(--surface2)}
+.wm.today{background:var(--math-bg)}
+.wm.wdone{background:#E6F5EC}
+.wm-lbl{font-size:10px;color:var(--faint);font-weight:600;margin-bottom:3px}
+.wm-num{font-size:14px;font-weight:600}
+.wm-dots{display:flex;gap:2px;justify-content:center;margin-top:4px}
+.wdot{width:4px;height:4px;border-radius:50%;background:var(--border)}
+.wdot.on{background:var(--math)}
+/* WORD OF DAY */
+.word-card{background:var(--phon-bg);border-radius:var(--rs);padding:14px}
+.word-big{font-family:'DM Serif Display',serif;font-size:21px;color:var(--phon-dk);margin-bottom:2px}
+.word-syl{font-size:12px;color:var(--phon);font-weight:600;letter-spacing:1.5px;margin-bottom:6px}
+.word-def{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:10px}
+.decode-box{background:#fff;border-radius:var(--rs);padding:11px;border:1px solid rgba(196,122,26,.2)}
+.decode-title{font-size:10px;font-weight:700;color:var(--phon-dk);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.decode-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px}
+.decode-step:last-child{margin-bottom:0}
+.dnum{width:18px;height:18px;border-radius:50%;background:var(--phon);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.dtext{font-size:12px;line-height:1.5;color:var(--text)}
+.word-practice{font-size:12px;color:var(--phon-dk);font-weight:500;background:rgba(196,122,26,.1);padding:7px 10px;border-radius:7px;margin-top:10px}
+/* FALLACIES */
+.fall-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.fall-row:last-child{border-bottom:none}
+.fall-abbr{width:28px;height:28px;background:var(--fall-bg);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--fall);flex-shrink:0}
+.fall-name{flex:1;font-weight:500;font-size:13px}
+.fall-wk{font-size:11px;color:var(--faint)}
+.fall-chk{color:var(--bio);font-weight:700}
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:24px;padding:34px;text-align:center;max-width:320px;margin:16px}
+.modal-emoji{font-size:46px;margin-bottom:12px}
+.modal h2{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:8px}
+.modal p{color:var(--muted);margin-bottom:18px;font-size:14px;line-height:1.55}
+.modal-btn{background:var(--text);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">Summer <span>Academy</span></div>
+  <div class="hdr-right">
+    <div class="date-badge" id="dateBadge"></div>
+    <div class="streak">🔥 <span id="streakNum">1</span>-day streak</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="greeting">
+    <h1 id="greetingH">Good morning! ☀️</h1>
+    <p>Check off each task as you go, then mark the subject complete!</p>
+  </div>
+
+  <!-- DATE PICKER — lets her change the date to see a different word of the day -->
+  <div class="date-row">
+    <label>📅 Date:</label>
+    <input type="date" class="date-input" id="datePicker" onchange="onDateChange()">
+    <button class="today-btn" onclick="resetToToday()">Today</button>
+    <span id="wordDateNote" style="font-size:12px;color:var(--phon);font-weight:500"></span>
+  </div>
+
+  <!-- DAY OF WEEK TABS -->
+  <div class="day-nav">
+    <span class="day-lbl">Day:</span>
+    <button class="day-btn" onclick="setDay(1)">Monday</button>
+    <button class="day-btn" onclick="setDay(2)">Tuesday</button>
+    <button class="day-btn" onclick="setDay(3)">Wednesday</button>
+    <button class="day-btn" onclick="setDay(4)">Thursday</button>
+    <button class="day-btn" onclick="setDay(5)">Friday</button>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-lbl">Today's progress</div>
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-pct" id="progPct">0%</div>
+  </div>
+
+  <div class="tabs" id="tabsRow"></div>
+
+  <div class="grid">
+    <div id="lessonArea" style="min-height:300px"></div>
+    <div>
+      <div class="scard">
+        <h3>This week</h3>
+        <div class="week-mini" id="weekMini"></div>
+      </div>
+      <div class="scard">
+        <h3>Word of the Day</h3>
+        <div id="wordArea"></div>
+      </div>
+      <div class="scard">
+        <h3>Fallacies learned</h3>
+        <div id="fallacyArea"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-emoji">🎉</div>
+    <h2>Subject complete!</h2>
+    <p id="overlayMsg">Amazing work — keep that momentum going!</p>
+    <button class="modal-btn" onclick="closeOverlay()">Keep going →</button>
+  </div>
+</div>
+
+<script>
+// ─── SUBJECTS & LESSONS ───────────────────────────────────────────────────────
+const SUBJECTS = [
+ {
+  id:'math', label:'Algebra 1', emoji:'📐',
+  c:'var(--math)', cbg:'var(--math-bg)', cdk:'var(--math-dk)',
+  days:[1,2,4],
+  lesson:{
+   title:'Variables & Expressions', week:1,
+   obj:'Write and evaluate algebraic expressions from word problems.',
+   tasks:[
+    {t:'Watch: "What is a Variable?" — Khan Academy (~7 min)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=tHYis-DP0oU',type:'yt'}]},
+    {t:'Watch: "Writing Algebraic Expressions" — Khan Academy (~5 min)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=HHRqmPIbHsI',type:'yt'}]},
+    {t:'Practice: evaluate expressions (10 problems)',
+     links:[{label:'🔗 Khan Practice',url:'https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:foundation-algebra/x2f8bb11595b61c86:algebraic-expressions/e/evaluating_expressions_1',type:'site'},
+            {label:'🖨️ Kuta Worksheet PDF',url:'https://cdn.kutasoftware.com/Worksheets/Alg1/Evaluating%20Expressions.pdf',type:'print'}]},
+    {t:'Self-check your answers — write down anything you missed and why',time:'~5 min'}
+   ],
+   tip:'💡 Key words: "sum"=add · "product"=multiply · "less than" flips order — "5 less than x" → x−5'
+  }
+ },
+ {
+  id:'bio', label:'Biology', emoji:'🔬',
+  c:'var(--bio)', cbg:'var(--bio-bg)', cdk:'var(--bio-dk)',
+  days:[2,3,5],
+  lesson:{
+   title:'Cell Structure & Function', week:1,
+   obj:'Identify organelles in plant and animal cells and explain the role of each.',
+   tasks:[
+    {t:'Watch: "Introduction to Cells: The Grand Cell Tour" — Amoeba Sisters',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=8IlzKri08kk',type:'yt'}]},
+    {t:'Watch: "Cell Organelles & Structures Review" — Amoeba Sisters (2024)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=6mgkoqcm6Sg',type:'yt'}]},
+    {t:'Interactive: label a cell diagram online',
+     links:[{label:'🔗 BiologyCorner Cell Diagram',url:'https://www.biologycorner.com/worksheets/cellmodel.html',type:'site'},
+            {label:'🖨️ Cell Coloring Worksheet',url:'https://www.biologycorner.com/worksheets/cellscoloring.pdf',type:'print'}]},
+    {t:'Analogy activity: match each organelle to a part of a school (write in notebook)',time:'~10 min'}
+   ],
+   tip:'🔬 Nucleus = principal\'s office · Mitochondria = cafeteria (makes energy) · Ribosomes = kitchen staff (make proteins)'
+  }
+ },
+ {
+  id:'eng', label:'English 2', emoji:'📚',
+  c:'var(--eng)', cbg:'var(--eng-bg)', cdk:'var(--eng-dk)',
+  days:[1,3,4,5],
+  lesson:{
+   title:'Annotating Literature', week:1,
+   obj:'Actively annotate a text — mark key ideas, ask margin questions, flag literary devices.',
+   tasks:[
+    {t:'Read: "The Most Dangerous Game" — full story free online',
+     links:[{label:'🔗 American Literature (free)',url:'https://americanliterature.com/author/richard-connell/short-story/the-most-dangerous-game',type:'site'},
+            {label:'🔗 Owl Eyes (with annotations)',url:'https://www.owleyes.org/text/the-most-dangerous-game/read/text-of-the-story',type:'site'}]},
+    {t:'Watch: how to annotate a text — two great guides',
+     links:[{label:'▶ English Professor Annotates (2024)',url:'https://www.youtube.com/watch?v=8fqfJLM-SgA',type:'yt'},
+            {label:'▶ Reading Actively: 7 Strategies',url:'https://www.youtube.com/watch?v=CNr-E8g35nI',type:'yt'}]},
+    {t:'Write 5 summary sentences about what happened so far',time:'~10 min'},
+    {t:'Find ONE example of foreshadowing — quote it and explain it in writing',time:'~5 min',
+     links:[{label:'🔗 What is Foreshadowing?',url:'https://www.literarydevices.net/foreshadowing/',type:'site'}]}
+   ],
+   tip:'✏️ Good annotations argue with the text. Write "Why?" or "This seems unfair because…" — not just summaries.'
+  }
+ },
+ {
+  id:'phon', label:'Phonics', emoji:'🗣️',
+  c:'var(--phon)', cbg:'var(--phon-bg)', cdk:'var(--phon-dk)',
+  days:[1,2,3,4,5],
+  lesson:{
+   title:'The 6 Syllable Types', week:1,
+   obj:'Name all 6 syllable types, give an example of each, and decode new multisyllabic words.',
+   tasks:[
+    {t:'Watch: "Six Syllable Types Explained" — Phonics Rules for Teachers (2024)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=AAhsT8MSmuU',type:'yt'}]},
+    {t:'Watch: "Learn the 6 Syllable Types" (2025)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=ZQDJx8_28mA',type:'yt'}]},
+    {t:'Print and study: Syllable Types reference card (Zaner-Bloser, free PDF)',
+     links:[{label:'🖨️ Free Syllable Types PDF',url:'https://media.zaner-bloser.com/reading/superkids-reading-program/pdfs/Superkids-Six-Syllable-Types-Printable-Cards-R1859A.pdf',type:'print'}]},
+    {t:'Practice: syllable sorting worksheets',
+     links:[{label:'🔗 Interactive Sort — Workybooks',url:'https://www.workybooks.com/worksheets/ela/reading-foundation/phonics/syllable-sort',type:'site'},
+            {label:'🖨️ Sort Worksheet — mathworksheets4kids',url:'https://www.mathworksheets4kids.com/language-arts/syllable/sort.pdf',type:'print'}]},
+    {t:'Challenge: decode these words aloud — epitome, phenomenon, biology',time:'~5 min'}
+   ],
+   tip:'📖 Epitome: e(open) · pit(closed) · o(open) · me(open) = 4 syllables. The final -e is its OWN open syllable — not silent!'
+  }
+ },
+ {
+  id:'phon2', label:'Roots & Words', emoji:'🌱',
+  c:'var(--phon)', cbg:'var(--phon-bg)', cdk:'var(--phon-dk)',
+  days:[1,2,3,4,5],
+  lesson:{
+   title:'Greek & Latin Roots — Set 1', week:2,
+   obj:'Learn 10 roots and use them to decode unfamiliar words independently.',
+   tasks:[
+    {t:'Watch: "Greek and Latin Roots, Suffixes and Prefixes" lesson (2025)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=d-2H6tek_L4',type:'yt'}]},
+    {t:'Watch: "Greek and Latin Roots" — Laura explains with examples (2022)',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=N9cnWvT_J5s',type:'yt'}]},
+    {t:'Study 10 roots: bio, graph, scope, port, rupt, struct, dict, aud, vis, script',
+     links:[{label:'🔗 Root Word Flashcards — Quizlet',url:'https://quizlet.com/subject/greek-and-latin-roots/',type:'site'}]},
+    {t:'For each root, write 2 words that use it — then decode 5 words you\'ve never seen',time:'~10 min',
+     links:[{label:'🔗 The Weighty Word Book',url:'https://www.weightywordinstitute.com/',type:'site'}]}
+   ],
+   tip:'🌱 bio=life. Once you know roots, 70% of English vocabulary unlocks itself — no more guessing!'
+  }
+ },
+ {
+  id:'fall', label:'Logic', emoji:'🧠',
+  c:'var(--fall)', cbg:'var(--fall-bg)', cdk:'var(--fall-dk)',
+  days:[2,4],
+  lesson:{
+   title:'What Is a Logical Fallacy?', week:1,
+   obj:'Define logical fallacy and identify the ad hominem fallacy in real examples.',
+   tasks:[
+    {t:'Watch: "What is a Logical Fallacy?" — TED-Ed',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=KesbDa5mPbM',type:'yt'}]},
+    {t:'Watch: "Ad Hominem Fallacy" explained with examples',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=iS-SgdMJyOQ',type:'yt'}]},
+    {t:'Read: Fallacy Detective — Introduction + Chapter 1',
+     links:[{label:'🔗 Logical Fallacy Reference',url:'https://yourlogicalfallacyis.com/',type:'site'}]},
+    {t:'Write the definition in your own words + find 2 real-life examples',time:'~10 min'}
+   ],
+   tip:'🧠 Ad hominem = attacking the PERSON, not the argument. "You\'re too young to understand" is a classic!'
+  }
+ },
+ {
+  id:'pen', label:'Penmanship', emoji:'✍️',
+  c:'var(--pen)', cbg:'var(--pen-bg)', cdk:'var(--pen-dk)',
+  days:[1,3,5],
+  lesson:{
+   title:'Cursive Letters a–m', week:1,
+   obj:'Form lowercase cursive letters a–m with proper stroke sequence and consistent sizing.',
+   tasks:[
+    {t:'Watch: cursive letter formation a–m tutorial',
+     links:[{label:'▶ Watch on YouTube',url:'https://www.youtube.com/watch?v=3FqmUANtm4Y',type:'yt'}]},
+    {t:'Print and trace: free cursive worksheets',
+     links:[{label:'🖨️ K5 Learning Cursive Worksheets',url:'https://www.k5learning.com/free-preschool-kindergarten-worksheets/handwriting/cursive',type:'print'},
+            {label:'🖨️ Education.com Cursive Sheets',url:'https://www.education.com/worksheets/cursive-writing/',type:'print'}]},
+    {t:'Write 3 short words from memory in cursive: "add", "bike", "came"',time:'~10 min'}
+   ],
+   tip:'✍️ Tilt paper 45°. Cursive flows from the wrist, not the fingers. Keep your grip relaxed — tight grip causes fatigue!'
+  }
+ }
+];
+
+// ─── WORDS OF THE DAY — 70 words, indexed by day-of-year ─────────────────────
+const WORDS = [
+ {word:'Epitome',syl:'e · pit · o · me',def:'A perfect example of something. (Greek: epitomē)',steps:['Break into 4 syllables: e — pit — o — me','e = open (long E) · pit = closed (short I) · o = open (long O) · me = open (long E)','The final -e is its OWN syllable — NOT silent here!','Blend forward slowly: "ee-PIT-oh-mee"'],practice:'Use it: "She was the epitome of kindness."'},
+ {word:'Phenomenon',syl:'phe · nom · e · non',def:'A remarkable observable event. (Greek: phainomenon)',steps:['4 syllables: phe — nom — e — non','ph = F sound (Greek rule)','Stress the 2nd syllable: feh-NOM','Blend: "feh-NOM-eh-non"'],practice:'Use it: "The northern lights are a stunning phenomenon."'},
+ {word:'Ubiquitous',syl:'u · biq · ui · tous',def:'Present everywhere at once. (Latin: ubique = everywhere)',steps:['4 syllables: u — biq — ui — tous','u = open (long "yoo") · biq = closed (short I)','ui = vowel team · tous = closed "tus"','Blend: "yoo-BIK-wih-tus"'],practice:'Use it: "Smartphones are ubiquitous in modern life."'},
+ {word:'Tenacious',syl:'te · na · cious',def:'Holding firmly; very persistent. (Latin: tenax)',steps:['3 syllables: te — na — cious','te and na = open syllables (long vowels)','cious = "shus" — a very common suffix','Blend: "teh-NAY-shus"'],practice:'Use it: "Her tenacious spirit helped her finish the race."'},
+ {word:'Eloquent',syl:'el · o · quent',def:'Fluent and persuasive in speech. (Latin: eloqui)',steps:['3 syllables: el — o — quent','el = closed · o = open (long O)','qu = "kw" blend · quent = "kwent"','Blend: "EL-oh-kwent"'],practice:'Use it: "The eloquent speaker moved the entire audience."'},
+ {word:'Voracious',syl:'vo · ra · cious',def:'Extremely eager for food or knowledge. (Latin: vorare)',steps:['3 syllables: vo — ra — cious','vo and ra = open syllables (long vowels)','cious = "shus" suffix','Blend: "voh-RAY-shus"'],practice:'Use it: "She was a voracious reader — one book a day!"'},
+ {word:'Audacious',syl:'au · da · cious',def:'Bold; willing to take surprising risks. (Latin: audax)',steps:['3 syllables: au — da — cious','au = vowel team, "aw" sound','da = open, long A · cious = "shus"','Blend: "aw-DAY-shus"'],practice:'Use it: "The audacious plan seemed impossible at first."'},
+ {word:'Benevolent',syl:'be · nev · o · lent',def:'Well-meaning and kind. (Latin: bene = well + volens = wishing)',steps:['4 syllables: be — nev — o — lent','be = open · nev = closed (short E)','o = open · lent = closed','Blend: "beh-NEV-oh-lent"'],practice:'Use it: "The benevolent teacher helped every struggling student."'},
+ {word:'Clandestine',syl:'clan · des · tine',def:'Done secretly or in hiding. (Latin: clam = secretly)',steps:['3 syllables: clan — des — tine','clan and des = closed (short vowels)','tine = VCe syllable, long I','Blend: "klan-DES-tin"'],practice:'Use it: "They held clandestine meetings after dark."'},
+ {word:'Ephemeral',syl:'e · phem · er · al',def:'Lasting only a very short time. (Greek: ephemeros)',steps:['4 syllables: e — phem — er — al','ph = F sound (Greek pattern)','er = r-controlled syllable','Blend: "eh-FEM-er-ul"'],practice:'Use it: "A rainbow is ephemeral — it fades in minutes."'},
+ {word:'Resilient',syl:'re · sil · i · ent',def:'Able to recover quickly from difficulty. (Latin: resilire)',steps:['4 syllables: re — sil — i — ent','re = open · sil = closed (short I)','i = open · ent = closed','Blend: "reh-ZIL-ee-ent"'],practice:'Use it: "After every setback she proved to be resilient."'},
+ {word:'Mellifluous',syl:'mel · lif · lu · ous',def:'Sweet and musical to hear. (Latin: mel = honey + fluere = flow)',steps:['4 syllables: mel — lif — lu — ous','mel and lif = closed syllables','lu = open (long OO) · ous = suffix','Blend: "meh-LIF-loo-us"'],practice:'Use it: "Her mellifluous voice filled the entire room."'},
+ {word:'Loquacious',syl:'lo · qua · cious',def:'Very talkative. (Latin: loqui = to speak)',steps:['3 syllables: lo — qua — cious','lo = open (long O)','qua = "kwah" blend','Blend: "loh-KWAY-shus"'],practice:'Use it: "My loquacious friend never stops talking."'},
+ {word:'Sagacious',syl:'sa · ga · cious',def:'Having good judgment and wisdom. (Latin: sagax)',steps:['3 syllables: sa — ga — cious','sa and ga = open syllables (long A)','cious = "shus" suffix','Blend: "sah-GAY-shus"'],practice:'Use it: "The sagacious judge considered every detail."'},
+ {word:'Nefarious',syl:'ne · far · i · ous',def:'Wicked or criminal. (Latin: nefas = wickedness)',steps:['4 syllables: ne — far — i — ous','ne = open · far = r-controlled','i = open · ous = suffix','Blend: "neh-FAIR-ee-us"'],practice:'Use it: "The villain hatched a nefarious scheme."'},
+ {word:'Capricious',syl:'ca · pri · cious',def:'Given to sudden changes of mood. (Italian: capriccio)',steps:['3 syllables: ca — pri — cious','ca = open (long A) · pri = open (long I)','cious = "shus" suffix','Blend: "kah-PREE-shus"'],practice:'Use it: "The capricious weather changed three times today."'},
+ {word:'Garrulous',syl:'gar · ru · lous',def:'Talking too much about trivial things. (Latin: garrire)',steps:['3 syllables: gar — ru — lous','gar = r-controlled · ru = open (long OO)','lous = "lus" closed suffix','Blend: "GAIR-oo-lus"'],practice:'Use it: "The garrulous passenger talked the whole flight."'},
+ {word:'Harbinger',syl:'har · bin · ger',def:'A sign of things to come. (Old French: herbergier)',steps:['3 syllables: har — bin — ger','har = r-controlled · bin = closed (short I)','ger = r-controlled suffix, soft G','Blend: "HAR-bin-jer"'],practice:'Use it: "Dark clouds are a harbinger of a coming storm."'},
+ {word:'Laconic',syl:'la · con · ic',def:'Using very few words. (Greek: Lakon = Spartan)',steps:['3 syllables: la — con — ic','la = open (long A) · con = closed (short O)','ic = closed suffix','Blend: "lah-KON-ik"'],practice:'Use it: "His laconic reply was simply: \'No.\'"'},
+ {word:'Malleable',syl:'mal · le · a · ble',def:'Able to be shaped; adaptable. (Latin: malleus = hammer)',steps:['4 syllables: mal — le — a — ble','mal = closed · le = open (long E)','a = open · ble = consonant-le','Blend: "MAL-ee-ah-bul"'],practice:'Use it: "A young mind is malleable and absorbs new ideas."'},
+ {word:'Serendipity',syl:'ser · en · dip · i · ty',def:'Finding something wonderful by happy accident.',steps:['5 syllables: ser — en — dip — i — ty','ser = r-controlled · en and dip = closed','i = open · ty = open (long E)','Blend: "sair-en-DIP-ih-tee"'],practice:'Use it: "Meeting her best friend was pure serendipity."'},
+ {word:'Taciturn',syl:'tac · i · turn',def:'Reserved and quiet; not fond of talking. (Latin: tacere)',steps:['3 syllables: tac — i — turn','tac = closed (short A) · i = open (long I)','turn = r-controlled','Blend: "TAS-ih-turn"'],practice:'Use it: "The taciturn librarian spoke only when needed."'},
+ {word:'Visceral',syl:'vis · cer · al',def:'Relating to deep, gut-level feelings. (Latin: viscera)',steps:['3 syllables: vis — cer — al','vis = closed · cer = r-controlled','al = unstressed closed','Blend: "VIS-er-ul"'],practice:'Use it: "The movie had a visceral impact on the audience."'},
+ {word:'Whimsical',syl:'whim · si · cal',def:'Playful and fanciful. (Norse: hvima = to wander with eyes)',steps:['3 syllables: whim — si — cal','wh = "w" sound · whim = closed (short I)','si = open · cal = closed','Blend: "WIM-zih-kul"'],practice:'Use it: "Her whimsical drawings featured flying cats."'},
+ {word:'Zealous',syl:'zeal · ous',def:'Full of energy and enthusiasm for a cause. (Greek: zelos)',steps:['2 syllables: zeal — ous','zeal = vowel team (ea = long E)','ous = common adjective suffix "us"','Blend: "ZEL-us"'],practice:'Use it: "She was zealous about her summer studies."'},
+ {word:'Ebullient',syl:'e · bul · lient',def:'Cheerful and full of energy. (Latin: ebullire = to bubble up)',steps:['3 syllables: e — bul — lient','e = open (long E) · bul = closed (short U)','lient = "yent" ending','Blend: "ih-BOOL-yent"'],practice:'Use it: "Her ebullient personality lit up every room."'},
+ {word:'Fastidious',syl:'fas · tid · i · ous',def:'Very attentive to accuracy and detail. (Latin: fastidium)',steps:['4 syllables: fas — tid — i — ous','fas and tid = closed syllables','i = open · ous = suffix','Blend: "fas-TID-ee-us"'],practice:'Use it: "The fastidious editor caught every single typo."'},
+ {word:'Gregarious',syl:'gre · gar · i · ous',def:'Fond of company; very sociable. (Latin: grex = flock)',steps:['4 syllables: gre — gar — i — ous','gre = open · gar = r-controlled','i = open · ous = suffix','Blend: "greh-GAIR-ee-us"'],practice:'Use it: "The gregarious student made friends on day one."'},
+ {word:'Impetuous',syl:'im · pet · u · ous',def:'Acting quickly without thinking. (Latin: impetus = force)',steps:['4 syllables: im — pet — u — ous','im = closed (short I) · pet = closed (short E)','u = open · ous = suffix','Blend: "im-PECH-oo-us"'],practice:'Use it: "Her impetuous decision led to consequences."'},
+ {word:'Mendacious',syl:'men · da · cious',def:'Not telling the truth. (Latin: mendax = liar)',steps:['3 syllables: men — da — cious','men = closed (short E)','da = open (long A) · cious = "shus"','Blend: "men-DAY-shus"'],practice:'Use it: "The mendacious politician was caught in many lies."'},
+ {word:'Nonchalant',syl:'non · cha · lant',def:'Appearing calm and unconcerned. (French: nonchaloir)',steps:['3 syllables: non — cha — lant','non = closed · cha = open "sha"','lant = closed, T is nearly silent','Blend: "non-shuh-LONT"'],practice:'Use it: "She seemed nonchalant — but had studied hard."'},
+ {word:'Obstinate',syl:'ob · sti · nate',def:'Stubbornly refusing to change. (Latin: obstinare)',steps:['3 syllables: ob — sti — nate','ob = closed · sti = open (long I)','nate = VCe (long A)','Blend: "OB-stih-nit"'],practice:'Use it: "The obstinate child refused to eat anything green."'},
+ {word:'Pragmatic',syl:'prag · mat · ic',def:'Dealing with things practically. (Greek: pragma = deed)',steps:['3 syllables: prag — mat — ic','prag and mat = closed syllables','ic = closed suffix','Blend: "prag-MAT-ik"'],practice:'Use it: "Take a pragmatic approach — focus on what works."'},
+ {word:'Quintessential',syl:'quin · tes · sen · tial',def:'The most perfect example of something.',steps:['4 syllables: quin — tes — sen — tial','qu = "kw" · quin = closed','tes and sen = closed','tial = "shul"; Blend: "kwin-teh-SEN-shul"'],practice:'Use it: "She was the quintessential student — always prepared."'},
+ {word:'Recalcitrant',syl:'re · cal · ci · trant',def:'Stubbornly uncooperative. (Latin: recalcitrare = to kick back)',steps:['4 syllables: re — cal — ci — trant','re = open · cal = closed','ci = open · trant = closed cluster','Blend: "reh-KAL-sih-trant"'],practice:'Use it: "The recalcitrant student refused every suggestion."'},
+ {word:'Tumultuous',syl:'tu · mul · tu · ous',def:'Loud, chaotic and disorderly. (Latin: tumultus)',steps:['4 syllables: tu — mul — tu — ous','tu = open (long OO) · mul = closed','tu again · ous = suffix','Blend: "too-MUL-choo-us"'],practice:'Use it: "The crowd gave a tumultuous cheer."'},
+ {word:'Verbose',syl:'ver · bose',def:'Using more words than necessary. (Latin: verbum = word)',steps:['2 syllables: ver — bose','ver = r-controlled syllable','bose = VCe (long O)','Blend: "ver-BOHS"'],practice:'Use it: "Her verbose essay could have been half the length."'},
+ {word:'Acumen',syl:'a · cu · men',def:'The ability to make good judgments quickly. (Latin: acuere)',steps:['3 syllables: a — cu — men','a = open · cu = open (long "kyoo")','men = closed (short E)','Blend: "AK-yoo-men"'],practice:'Use it: "Her business acumen impressed the investors."'},
+ {word:'Cogent',syl:'co · gent',def:'Clear, logical, and convincing. (Latin: cogere = to compel)',steps:['2 syllables: co — gent','co = open (long O)','gent = closed, soft G before E','Blend: "KOH-jent"'],practice:'Use it: "She made a cogent argument for changing the rule."'},
+ {word:'Didactic',syl:'di · dac · tic',def:'Intended to teach or instruct. (Greek: didaktikos)',steps:['3 syllables: di — dac — tic','di = open (long I) · dac = closed','tic = closed suffix','Blend: "dye-DAK-tik"'],practice:'Use it: "The fable had a didactic message about honesty."'},
+ {word:'Fortuitous',syl:'for · tu · i · tous',def:'Happening by lucky chance. (Latin: fortuitus)',steps:['4 syllables: for — tu — i — tous','for = r-controlled · tu = open','i = open · tous = closed suffix','Blend: "for-TOO-ih-tus"'],practice:'Use it: "It was fortuitous that she found the lost key."'},
+ {word:'Halcyon',syl:'hal · cy · on',def:'Joyfully peaceful and carefree. (Greek: alkyon)',steps:['3 syllables: hal — cy — on','hal = closed (short A)','cy = open (long I; y as vowel)','Blend: "HAL-see-on"'],practice:'Use it: "She looked back on those halcyon summer days with joy."'},
+ {word:'Iconoclast',syl:'i · con · o · clast',def:'Someone who challenges traditional beliefs. (Greek)',steps:['4 syllables: i — con — o — clast','i = open · con = closed','o = open · clast = closed cluster','Blend: "eye-KON-oh-klast"'],practice:'Use it: "The scientist was an iconoclast who overturned old theories."'},
+ {word:'Labyrinthine',syl:'lab · y · rin · thine',def:'Complicated and maze-like. (Greek: labyrinthos)',steps:['4 syllables: lab — y — rin — thine','lab = closed · y = open (short I)','rin = closed · thine = VCe (long I)','Blend: "lab-ih-RIN-thin"'],practice:'Use it: "The labyrinthine plot confused many readers."'},
+ {word:'Hegemony',syl:'he · gem · o · ny',def:'Leadership or dominance over others. (Greek: hegemon)',steps:['4 syllables: he — gem — o — ny','he = open (long E)','gem = closed, soft G before E','Blend: "heh-JEM-oh-nee"'],practice:'Use it: "The country sought hegemony over the region."'},
+ {word:'Enervate',syl:'en · er · vate',def:'To drain someone of energy. (Latin: enervare)',steps:['3 syllables: en — er — vate','en = closed · er = r-controlled','vate = VCe (long A)','Blend: "EN-er-vayt"'],practice:'Use it: "The heat began to enervate everyone at the picnic."'},
+ {word:'Wistful',syl:'wist · ful',def:'Having a longing or gentle sadness. (Old English: wist)',steps:['2 syllables: wist — ful','wist = closed (short I)','ful = closed suffix','Blend: "WIST-ful"'],practice:'Use it: "She gave a wistful smile thinking of home."'},
+ {word:'Perspicacious',syl:'per · spi · ca · cious',def:'Having sharp insight. (Latin: perspicax)',steps:['4 syllables: per — spi — ca — cious','per = r-controlled · spi = open (long I)','ca = open (long A) · cious = "shus"','Blend: "per-spih-KAY-shus"'],practice:'Use it: "A perspicacious reader notices hidden details."'},
+ {word:'Ineffable',syl:'in · ef · fa · ble',def:'Too great to be expressed in words.',steps:['4 syllables: in — ef — fa — ble','in = prefix "not" · ef = closed','fa = open · ble = consonant-le','Blend: "in-EF-ah-bul"'],practice:'Use it: "The sunset was ineffable — no words could describe it."'},
+ {word:'Acrimonious',syl:'ac · ri · mo · ni · ous',def:'Angry and bitter in tone. (Latin: acrimonia)',steps:['5 syllables: ac — ri — mo — ni — ous','ac = closed · ri and mo = open','ni = open · ous = suffix','Blend: "ak-rih-MOH-nee-us"'],practice:'Use it: "The acrimonious debate ended with no resolution."'},
+ {word:'Sycophant',syl:'syc · o · phant',def:'A person who flatters others to gain favor. (Greek)',steps:['3 syllables: syc — o — phant','syc = closed (short I) · o = open','phant = ph makes F sound!','Blend: "SIK-oh-fant"'],practice:'Use it: "The sycophant agreed with everything the boss said."'},
+ {word:'Pernicious',syl:'per · ni · cious',def:'Causing gradual harm. (Latin: pernicies)',steps:['3 syllables: per — ni — cious','per = r-controlled · ni = open (long I)','cious = "shus" suffix','Blend: "per-NISH-us"'],practice:'Use it: "Misinformation has a pernicious effect on society."'},
+ {word:'Oblivious',syl:'ob · liv · i · ous',def:'Unaware of what is happening around you. (Latin: oblivio)',steps:['4 syllables: ob — liv — i — ous','ob and liv = closed syllables','i = open · ous = suffix','Blend: "ob-LIV-ee-us"'],practice:'Use it: "She was oblivious to the noise outside."'},
+ {word:'Magnanimous',syl:'mag · nan · i · mous',def:'Very generous or forgiving. (Latin: magnus + animus)',steps:['4 syllables: mag — nan — i — mous','mag and nan = closed syllables','i = open · mous = "mus"','Blend: "mag-NAN-ih-mus"'],practice:'Use it: "The magnanimous winner congratulated her opponent."'},
+ {word:'Byzantine',syl:'Byz · an · tine',def:'Excessively complicated. (from Byzantine Empire)',steps:['3 syllables: Byz — an — tine','Byz = closed (short I) · an = closed','tine = VCe (long I)','Blend: "BIZ-an-tyne"'],practice:'Use it: "The tax code is notoriously byzantine."'},
+ {word:'Grandiloquent',syl:'gran · dil · o · quent',def:'Using pompous language. (Latin: grandis + loqui)',steps:['4 syllables: gran — dil — o — quent','gran = closed · dil = closed','o = open · quent = "kwent"','Blend: "gran-DIL-oh-kwent"'],practice:'Use it: "His grandiloquent speech impressed no one."'},
+ {word:'Kinesthetic',syl:'kin · es · thet · ic',def:'Learning through movement and touch. (Greek: kinein)',steps:['4 syllables: kin — es — thet — ic','kin and es = closed syllables','thet = closed · ic = suffix','Blend: "kin-es-THET-ik"'],practice:'Use it: "She was a kinesthetic learner — learning by doing."'},
+ {word:'Juxtapose',syl:'jux · ta · pose',def:'To place two things side by side for contrast. (Latin: juxta)',steps:['3 syllables: jux — ta — pose','jux = closed (short U) · ta = open','pose = VCe (long O)','Blend: "JUKS-tah-pohz"'],practice:'Use it: "The author juxtaposed wealth and poverty for effect."'},
+ {word:'Didactic',syl:'di · dac · tic',def:'Intended to teach or moralize. (Greek: didaktikos)',steps:['3 syllables: di — dac — tic','di = open (long I)','dac = closed · tic = closed suffix','Blend: "dye-DAK-tik"'],practice:'Use it: "The story had a didactic message about courage."'},
+ {word:'Propitious',syl:'pro · pi · tious',def:'Giving a good chance of success. (Latin: propitius)',steps:['3 syllables: pro — pi — tious','pro = open (long O) · pi = open (long I)','tious = "shus" suffix','Blend: "proh-PISH-us"'],practice:'Use it: "It was a propitious time to start her new project."'},
+ {word:'Veracious',syl:'ve · ra · cious',def:'Speaking the truth. (Latin: verax)',steps:['3 syllables: ve — ra — cious','ve and ra = open syllables','cious = "shus" suffix','Blend: "veh-RAY-shus"'],practice:'Use it: "She was always veracious — never exaggerating."'},
+ {word:'Ostentatious',syl:'os · ten · ta · tious',def:'Showy; designed to impress. (Latin: ostentare)',steps:['4 syllables: os — ten — ta — tious','os and ten = closed · ta = open','tious = "shus" suffix','Blend: "os-ten-TAY-shus"'],practice:'Use it: "Her ostentatious outfit made sure everyone noticed."'},
+ {word:'Melancholy',syl:'mel · an · chol · y',def:'A feeling of pensive sadness. (Greek: melas + khole)',steps:['4 syllables: mel — an — chol — y','mel and an = closed syllables','ch here = K sound (Greek origin!)','Blend: "MEL-an-kol-ee"'],practice:'Use it: "A melancholy mood settled over her on rainy days."'},
+ {word:'Obstreperous',syl:'ob · strep · er · ous',def:'Noisy and difficult to control. (Latin: obstrepere)',steps:['4 syllables: ob — strep — er — ous','ob = closed · strep = closed cluster','er = r-controlled · ous = suffix','Blend: "ob-STREP-er-us"'],practice:'Use it: "The obstreperous crowd drowned out the speaker."'},
+ {word:'Perfidious',syl:'per · fid · i · ous',def:'Deceitful and untrustworthy. (Latin: perfidia)',steps:['4 syllables: per — fid — i — ous','per = r-controlled · fid = closed','i = open · ous = suffix','Blend: "per-FID-ee-us"'],practice:'Use it: "The perfidious spy betrayed his own allies."'},
+ {word:'Deferential',syl:'def · er · en · tial',def:'Showing humble respect. (Latin: deferre)',steps:['4 syllables: def — er — en — tial','def = closed · er = r-controlled','en = closed · tial = "shul"','Blend: "def-er-EN-shul"'],practice:'Use it: "He was always deferential to his elders."'},
+ {word:'Unequivocal',syl:'un · e · quiv · o · cal',def:'Leaving absolutely no doubt. (Latin: aequivocus)',steps:['5 syllables: un — e — quiv — o — cal','un = prefix "not" · e = open','quiv = closed · o = open · cal = closed','Blend: "un-ee-KWIV-oh-kul"'],practice:'Use it: "Her unequivocal answer left no room for confusion."'},
+ {word:'Idiosyncratic',syl:'id · i · o · syn · crat · ic',def:'A peculiar behavior unique to one person. (Greek)',steps:['6 syllables: id — i — o — syn — crat — ic','id = closed · i and o = open','syn = closed (short I) · crat = closed','Blend: "id-ee-oh-sin-KRAT-ik"'],practice:'Use it: "Her idiosyncratic habit of humming while reading was endearing."'},
+];
+
+// ─── FALLACIES TRACKER ───────────────────────────────────────────────────────
+const FALLACIES=[
+ {abbr:'AH',name:'Ad Hominem',done:true,week:'Wk 1'},
+ {abbr:'SM',name:'Straw Man',done:true,week:'Wk 2'},
+ {abbr:'FD',name:'False Dilemma',done:false,week:'Wk 2'},
+ {abbr:'AE',name:'Appeal to Emotion',done:false,week:'Wk 3'},
+ {abbr:'SS',name:'Slippery Slope',done:false,week:'Wk 4'},
+ {abbr:'CR',name:'Circular Reasoning',done:false,week:'Wk 5'},
+];
+
+const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MON_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+// pickedDate drives word of day; currentDay (1-5) drives which subjects show
+let pickedDate = new Date();  // the date shown in the picker — starts as today
+let currentDay = new Date().getDay(); // JS day 0=Sun..6=Sat
+let currentSub = null;
+let taskState = {};
+let completedSet = new Set();
+
+// Map JS day to schedule day 1-5
+function schedDay(){
+  if(currentDay===0||currentDay===6) return 1;
+  return currentDay;
+}
+function subsForDay(sd){ return SUBJECTS.filter(s=>s.days.includes(sd)); }
+
+// ── Word of day uses ONLY pickedDate, not currentDay ──────────────────────────
+function wordForDate(d){
+  const start = new Date(d.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((d - start) / 86400000);
+  return WORDS[dayOfYear % WORDS.length];
+}
+
+// ─── DATE PICKER ─────────────────────────────────────────────────────────────
+function initDatePicker(){
+  const el = document.getElementById('datePicker');
+  // Set to today
+  const now = new Date();
+  el.value = now.toISOString().slice(0,10);
+  pickedDate = now;
+}
+
+function onDateChange(){
+  const val = document.getElementById('datePicker').value;
+  if(!val) return;
+  // Parse as local date (avoid timezone shift)
+  const parts = val.split('-');
+  pickedDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  renderWord();
+  updateDateBadge();
+}
+
+function resetToToday(){
+  const now = new Date();
+  pickedDate = now;
+  document.getElementById('datePicker').value = now.toISOString().slice(0,10);
+  renderWord();
+  updateDateBadge();
+}
+
+function updateDateBadge(){
+  document.getElementById('dateBadge').textContent =
+    DAY_NAMES[pickedDate.getDay()] + ', ' + MON_NAMES[pickedDate.getMonth()] + ' ' + pickedDate.getDate();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderDayNav(){
+  document.querySelectorAll('.day-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(i+1)===schedDay());
+  });
+}
+
+function renderTabs(){
+  const sd=schedDay();
+  const subs=subsForDay(sd);
+  const row=document.getElementById('tabsRow');
+  if(!subs.length){row.innerHTML='';return;}
+  if(!currentSub||!subs.find(s=>s.id===currentSub)) currentSub=subs[0].id;
+  row.innerHTML=subs.map(s=>{
+    const active=s.id===currentSub;
+    const done=completedSet.has(s.id+'_'+sd);
+    return `<div class="stab${active?' active':''}${done?' sdone':''}"
+      style="--c:${s.c};--cbg:${s.cbg}"
+      onclick="selectSub('${s.id}')">
+      <span class="stab-dot"></span>${s.emoji} ${s.label}${done?' ✓':''}
+    </div>`;
+  }).join('');
+}
+
+function renderLesson(){
+  const sd=schedDay();
+  const subs=subsForDay(sd);
+  const area=document.getElementById('lessonArea');
+  if(!subs.length){
+    area.innerHTML=`<div class="offday"><div class="big">🌴</div>
+      <h2>Rest day — you've earned it!</h2>
+      <p>No lessons today. Use the day buttons above to preview any other day, or change the date to see a new Word of the Day!</p>
+    </div>`;
+    return;
+  }
+  const s=SUBJECTS.find(x=>x.id===currentSub);
+  if(!s){area.innerHTML='';return;}
+  const L=s.lesson;
+  const key=s.id+'_'+sd;
+  if(!taskState[key]) taskState[key]=L.tasks.map(()=>false);
+  const T=taskState[key];
+  const doneCount=T.filter(Boolean).length;
+  const allDone=doneCount===T.length;
+
+  const tasksHtml=L.tasks.map((t,i)=>`
+    <li class="task-item${T[i]?' done':''}">
+      <div class="task-row" onclick="toggleTask('${key}',${i})">
+        <div class="tcb">${T[i]?'✓':''}</div>
+        <div style="flex:1">
+          <div class="task-text">${t.t}</div>
+          ${t.time?`<div class="task-time">${t.time}</div>`:''}
+        </div>
+      </div>
+      ${t.links&&t.links.length?`<div class="task-links">${t.links.map(l=>`<a class="rlink ${l.type}" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.label}</a>`).join('')}</div>`:''}
+    </li>`).join('');
+
+  area.innerHTML=`<div class="lcard" style="--c:${s.c};--cbg:${s.cbg};--cdk:${s.cdk}">
+    <div class="lc-hdr">
+      <div class="lc-badge">${s.emoji} ${s.label}</div>
+      <div class="lc-title">${L.title}</div>
+      <div class="lc-meta">
+        <span class="lc-tag">Week ${L.week}</span>
+        <span>📅 ${DAY_NAMES[currentDay>=1&&currentDay<=5?currentDay:1]}</span>
+      </div>
+    </div>
+    <div class="lc-body">
+      <div class="obj-box"><strong>🎯 Objective: </strong>${L.obj}</div>
+      <ul class="task-list">${tasksHtml}</ul>
+      <div class="tip-box"><em>tip</em>${L.tip}</div>
+    </div>
+    <div class="lc-ftr">
+      <span style="font-size:13px;color:var(--muted)">${doneCount} / ${T.length} tasks done</span>
+      <button class="done-btn"${allDone?'':' disabled'} style="background:${s.c}" onclick="completeSub('${s.id}')">Mark complete ✓</button>
+    </div>
+  </div>`;
+}
+
+function selectSub(id){currentSub=id;renderTabs();renderLesson();}
+
+function toggleTask(key,i){
+  taskState[key][i]=!taskState[key][i];
+  renderLesson();
+  updateProgress();
+}
+
+function completeSub(id){
+  const sd=schedDay();
+  completedSet.add(id+'_'+sd);
+  renderTabs();
+  updateProgress();
+  const s=SUBJECTS.find(x=>x.id===id);
+  document.getElementById('overlayMsg').textContent=`You finished ${s.label} for today. That is real progress!`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+  const sd=schedDay();
+  const next=subsForDay(sd).find(s=>!completedSet.has(s.id+'_'+sd));
+  if(next) selectSub(next.id);
+}
+
+function updateProgress(){
+  const sd=schedDay();
+  const subs=subsForDay(sd);
+  let total=0,done=0;
+  subs.forEach(s=>{
+    const key=s.id+'_'+sd;
+    if(taskState[key]){total+=taskState[key].length;done+=taskState[key].filter(Boolean).length;}
+    else total+=s.lesson.tasks.length;
+  });
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progPct').textContent=pct+'%';
+}
+
+function setDay(sd){
+  currentDay=sd;
+  currentSub=null;
+  renderDayNav();
+  renderTabs();
+  renderLesson();
+  updateProgress();
+  renderWeek();
+  // NOTE: word of day does NOT change when day-nav changes — only date picker changes it
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function renderWeek(){
+  const labels=['M','T','W','T','F'],nums=[9,10,11,12,13];
+  const sd=schedDay();
+  document.getElementById('weekMini').innerHTML=labels.map((d,i)=>{
+    const day=i+1;
+    const isToday=day===sd;
+    const hasDone=subsForDay(day).some(s=>completedSet.has(s.id+'_'+day));
+    return `<div class="wm${isToday?' today':''}${hasDone?' wdone':''}" onclick="setDay(${day})">
+      <div class="wm-lbl">${d}</div>
+      <div class="wm-num">${nums[i]}</div>
+      <div class="wm-dots">${subsForDay(day).slice(0,3).map(s=>`<div class="wdot${completedSet.has(s.id+'_'+day)?' on':''}"></div>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWord(){
+  const w=wordForDate(pickedDate);
+  const stepsHtml=w.steps.map((s,i)=>`
+    <div class="decode-step">
+      <div class="dnum">${i+1}</div>
+      <div class="dtext">${s}</div>
+    </div>`).join('');
+  document.getElementById('wordArea').innerHTML=`
+    <div class="word-card">
+      <div class="word-big">${w.word}</div>
+      <div class="word-syl">${w.syl}</div>
+      <div class="word-def">${w.def}</div>
+      <div class="decode-box">
+        <div class="decode-title">🗣️ How to sound it out</div>
+        ${stepsHtml}
+      </div>
+      <div class="word-practice">${w.practice}</div>
+    </div>`;
+}
+
+function renderFallacies(){
+  document.getElementById('fallacyArea').innerHTML=FALLACIES.map(f=>`
+    <div class="fall-row">
+      <div class="fall-abbr">${f.abbr}</div>
+      <div style="flex:1"><div class="fall-name">${f.name}</div><div class="fall-wk">${f.week}</div></div>
+      ${f.done?'<div class="fall-chk">✓</div>':''}
+    </div>`).join('');
+}
+
+function initHeader(){
+  const h=new Date().getHours();
+  document.getElementById('greetingH').textContent=
+    h<12?'Good morning! ☀️':h<17?'Good afternoon! 🌤️':'Good evening! 🌙';
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',function(){
+  // If today is weekend, start on Monday
+  if(currentDay===0||currentDay===6) currentDay=1;
+  initHeader();
+  initDatePicker();
+  updateDateBadge();
+  renderDayNav();
+  renderTabs();
+  renderLesson();
+  renderWeek();
+  renderWord();
+  renderFallacies();
+  updateProgress();
+});
+</script>
+</body>
+</html>
